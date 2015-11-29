@@ -7,6 +7,7 @@ DistributionPath:分发目录，多个分发目录之间用分号分隔
 SrcPath:要监控的目录
 Title:控制台窗口标题
 IngorePattern:要忽略的路径模式，符合此模式的文件或文件夹将不做处理,默认是\.git[\s\S]* ，表示忽略.git目录
+
 配置示例
 ```
   <applicationSettings>
