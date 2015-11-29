@@ -23,36 +23,39 @@ namespace SanSan.Properties {
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("G:\\JavaWorkSpace\\bx\\weplatform\\01.PROJECT\\webapp\\extpage")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string DistributionPath {
             get {
                 return ((string)(this["DistributionPath"]));
-            }
-            set {
-                this["DistributionPath"] = value;
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("G:\\SanSan\\ClientLib")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string SrcPath {
             get {
                 return ((string)(this["SrcPath"]));
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("文件同步分发器")]
         public string Title {
             get {
                 return ((string)(this["Title"]));
             }
-            set {
-                this["Title"] = value;
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("\\.git[\\s\\S]*")]
+        public string IngorePattern {
+            get {
+                return ((string)(this["IngorePattern"]));
             }
         }
     }

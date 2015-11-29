@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.IO;
+using System.Text.RegularExpressions;
 
 
 namespace SanSan
@@ -11,10 +13,20 @@ namespace SanSan
         private static FileSystemWatcher m_Watcher = null;
         private static List<String> distributionPath = new List<string>();
         private static string SanSanSrcPath = null;
+        private static string IngorePattern=null;
+        private static Regex IngoreRegex;
+
         static void Main(string[] args)
         {
+            
             Console.Title = Properties.Settings.Default.Title?? "文件同步分发器";
             SanSanSrcPath =  Properties.Settings.Default.SrcPath??"";
+            if (SanSanSrcPath.EndsWith("\\"))
+            {
+                SanSanSrcPath = SanSanSrcPath.Substring(0, SanSanSrcPath.Length - 1);
+            }
+            IngorePattern = Properties.Settings.Default.IngorePattern??"";
+            IngoreRegex=new Regex(IngorePattern);
             
             if (!Directory.Exists(SanSanSrcPath))
             {
@@ -81,9 +93,25 @@ namespace SanSan
         );
         }
 
+        private static bool isIngorePath(String fullPath)
+        {
+
+            if (IngoreRegex.IsMatch(fullPath,SanSanSrcPath.Length+1))
+            {
+                return true;
+
+            }
+            return false;
+
+        }
 
         private static void OnRenamed(object sender, RenamedEventArgs e)
         {
+            if (isIngorePath(e.OldFullPath))
+            {
+                return;
+                
+            }
            reNameToDistPath(e.OldFullPath,e.FullPath);
         }
 
@@ -151,6 +179,11 @@ namespace SanSan
 
         private static void OnChanged(object sender, FileSystemEventArgs e)
         {
+            if (isIngorePath(e.FullPath))
+            {
+                return;
+
+            }
             
             String date = DateTime.Now.ToString();
             Console.WriteLine( date+ " {0} {1}", e.ChangeType, e.FullPath);
