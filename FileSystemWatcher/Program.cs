@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.IO;
+using System.Net.Configuration;
 using System.Text.RegularExpressions;
 
 
@@ -14,7 +15,7 @@ namespace SanSan
         private static List<String> distributionPath = new List<string>();
         private static string SanSanSrcPath = null;
         private static string IngorePattern=null;
-        private static Regex IngoreRegex;
+        private static List<Regex> IngoreRegex=new List<Regex>();
 
         static void Main(string[] args)
         {
@@ -26,7 +27,28 @@ namespace SanSan
                 SanSanSrcPath = SanSanSrcPath.Substring(0, SanSanSrcPath.Length - 1);
             }
             IngorePattern = Properties.Settings.Default.IngorePattern??"";
-            IngoreRegex=new Regex(IngorePattern);
+
+            var a = IngorePattern.Split('\r');
+            for (int i= 0; i <a.Length ; i++)
+            {
+                if (String.IsNullOrEmpty(a[i]))
+                {
+                    continue;                    
+                }
+                try
+                {
+                    var reg = new Regex(a[i]);
+                    IngoreRegex.Add(reg);
+                }
+                catch (Exception e)
+                {
+
+                    Console.Write("初始化忽略规则:" + a[i] + "失败" + e.Message);
+                }
+                
+            }
+
+            
             
             if (!Directory.Exists(SanSanSrcPath))
             {
@@ -41,12 +63,22 @@ namespace SanSan
             m_Watcher.Path = SanSanSrcPath;
             m_Watcher.IncludeSubdirectories = true;
             m_Watcher.Filter = "";
+
+            m_Watcher.NotifyFilter =
+                NotifyFilters.LastWrite
+                | NotifyFilters.FileName
+                | NotifyFilters.DirectoryName;
+                //|NotifyFilters.Attributes
+                //|NotifyFilters.CreationTime
+                //|NotifyFilters.LastAccess
+                //|NotifyFilters.Security
+                //|NotifyFilters.Size;
             
-            m_Watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName|NotifyFilters.DirectoryName;
             m_Watcher.Created += OnChanged;
             m_Watcher.Changed +=OnChanged;
             m_Watcher.Deleted +=OnChanged;
             m_Watcher.Renamed += OnRenamed;
+            m_Watcher.Error += OnError;
             m_Watcher.EnableRaisingEvents = true;
             createDistPath();
             Console.WriteLine("按下\'Q\' 退出监控!");
@@ -57,6 +89,12 @@ namespace SanSan
                     Console.WriteLine("将完整分发源码");                    
                 }
             }
+        }
+
+        private static void OnError(object sender, ErrorEventArgs e)
+        {
+            String date = DateTime.Now.ToString();
+            Console.WriteLine(date + "Error: {0} ", e.GetException().Message);
         }
 
 
@@ -95,24 +133,49 @@ namespace SanSan
 
         private static bool isIngorePath(String fullPath)
         {
-
-            if (IngoreRegex.IsMatch(fullPath,SanSanSrcPath.Length+1))
+            var r=IngoreRegex.Exists((reg) =>
             {
-                return true;
+                if (reg.IsMatch(fullPath, SanSanSrcPath.Length + 1))
+                {
+                    return true;
 
-            }
-            return false;
+                }
+                return false;
+            });
+            return r;
 
         }
+        /// <summary>
+        /// 是否是VS创建的临时文件
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static bool IsVSTempFile(String fileName)
+        {
+            return Path.GetExtension(fileName).EndsWith("~");            
+        }
 
+        /// <summary>
+        /// 文件重命名处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void OnRenamed(object sender, RenamedEventArgs e)
         {
+            String date = DateTime.Now.ToString();
+            Console.WriteLine(date + " ChangeType: {0} {1}", e.ChangeType, e.OldFullPath);
             if (isIngorePath(e.OldFullPath))
             {
                 return;
                 
             }
-           reNameToDistPath(e.OldFullPath,e.FullPath);
+            if (Properties.Settings.Default.VSFileEditMode&&IsVSTempFile(e.OldFullPath))
+            {
+                //VS修改保存文件的方式是:先创建一个临时文件->再删除原文件->再把临时文件重命名为原文件
+                Console.WriteLine("{0} 发现VistualStudio文件保存模式");
+                copyToDistPath(e.FullPath);
+            }
+            reNameToDistPath(e.OldFullPath,e.FullPath);
         }
 
        
@@ -179,14 +242,14 @@ namespace SanSan
 
         private static void OnChanged(object sender, FileSystemEventArgs e)
         {
+            
+            String date = DateTime.Now.ToString();
+            Console.WriteLine(date + " ChangeType: {0} {1} ",  e.ChangeType, e.FullPath);
             if (isIngorePath(e.FullPath))
             {
                 return;
-
             }
             
-            String date = DateTime.Now.ToString();
-            Console.WriteLine( date+ " {0} {1}", e.ChangeType, e.FullPath);
             
             if (e.ChangeType==WatcherChangeTypes.Changed)
             {

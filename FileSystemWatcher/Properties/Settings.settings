@@ -2,17 +2,20 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SanSan.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
+    <Setting Name="Title" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">文件同步分发器</Value>
+    </Setting>
+    <Setting Name="IngorePattern" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">\.git[\s\S]*</Value>
+    </Setting>
     <Setting Name="DistributionPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="SrcPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="Title" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">文件同步分发器</Value>
-    </Setting>
-    <Setting Name="IngorePattern" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">\.git[\s\S]*</Value>
+    <Setting Name="VSFileEditMode" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>
